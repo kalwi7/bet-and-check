@@ -5,16 +5,17 @@ const betsList = document.querySelector(".history-bets");
 const hisoryBets = document.querySelector(".bets-list");
 const gameDetails = document.querySelector(".game-details__odds");
 const clientPanel = document.querySelector(".client-panel");
+const historyActiveWrap = document.querySelector(".game-details__bets");
 
 const api = "iTOZUEQfReJ1JFWOZERzkmgwAzRrcku75fQhwmoqz2XQEmkMmWOy1cZpGlBY";
 const api2 = "hXaKsttEG25TfczCr206RzFTM1cxdGMAM1fS9OXeJRupAqQlE4VXZQqQpGYP";
 const api3 = "PW1ycFbPdDklgZ7Q7wYTZC9jCRDjeWfj3gxMKEhQwYd4YYc84lVObiNA47rK";
+const api4 = "yWjhHMDUavTIoqW7nlAgFJfHS0KXxt8P9HkZOX49r9cCU2gMsbenwSmPfEXF";
+const api5 = "Xrt0s9CL0d1LuRSvhVImB191YJQpXkBUElFxhEZM9jy7LuZGCQ5kvybz1Nxt";
 
 function getRnd(min, max) {
   return parseFloat((Math.random() * (max - min + 1) + min).toFixed(2));
 }
-
-console.log(getRnd(1, 9));
 
 let betsArr = [];
 betsArr = JSON.parse(localStorage.getItem("myData"));
@@ -25,19 +26,17 @@ var requestOptions = {
 };
 
 const renderBets = function (betsArr, placeToRender) {
-  betsList.innerHTML = "";
-  hisoryBets.innerHTML = "";
+  placeToRender.innerHTML = "";
+  // betsList.innerHTML = "";
+  // hisoryBets.innerHTML = "";
 
   for (const game of betsArr) {
     const html = ` 
         <li class="tile tile--game-details tile-with-bets" data-id="${game.gameID}">
         <div id="localteam" class="tile__team-preview " data-teamBetId="${game.teamsHomeId}">
         <div class="tile__team-preview__img-score">
-        <img
-        src=${game.teamsHome.logo}
-        alt="logo"
-        />
-        <div class="tile__team-preview__name">${game.teamsHome.name}</div>
+
+        <div class="tile__team-preview__name">${game.teamsHome.name}: ${game.scoreLocal}</div>
         </div>
         <div class="tile__team-preview__score">${game.odds.team1win}</div>
         </div>
@@ -57,16 +56,13 @@ const renderBets = function (betsArr, placeToRender) {
         </div>
         <div id="visitorteam" class="tile__team-preview" data-teamBetId="${game.teamsVisitorsId}">
         <div class="tile__team-preview__img-score">
-        <img
-        src=${game.teamsVisitors.logo}
-        alt="logo"
-        />
-        <div class="tile__team-preview__name">${game.teamsVisitors.name}</div>
+        <div class="tile__team-preview__name">${game.teamsVisitors.name}: ${game.scoreVisitor}</div>
         </div>
         <div class="tile__team-preview__score">${game.odds.team2win}</div>
         </div>
         <span class="btn-close"></span>
             <span class="match-date">${game.time}</span>
+            
             </li>`;
     placeToRender.insertAdjacentHTML("beforeend", html);
 
@@ -87,15 +83,12 @@ const renderBets = function (betsArr, placeToRender) {
       draw.classList.add("winner-bet");
     }
 
-    console.log(game.bet);
-    console.log(game.winner);
-
     if (game.winner && game.bet === game.winner) {
       localteam.closest(".tile-with-bets").classList.add("winner-ok");
     } else if (game.winner)
       localteam.closest(".tile-with-bets").classList.add("winner-lose");
 
-    localStorage.setItem("myData", JSON.stringify(betsArr));
+    // localStorage.setItem("myData", JSON.stringify(betsArr));
   }
 };
 
@@ -145,6 +138,7 @@ const collectBets = function (arr) {
           </div>`;
 
         gameDetails.innerHTML = html;
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
   });
@@ -194,15 +188,15 @@ const checkGameResoult = function (gamesArr) {
   const gamesArrHistory = gamesArr.filter(
     (game) => Date.parse(game.time) < Date.parse(now)
   );
-  renderBets(gamesArrHistory, hisoryBets);
+  localStorage.setItem("myData", JSON.stringify(gamesArr));
   gamesArr = gamesArr.filter((game) => Date.parse(game.time) > Date.parse(now));
 
-  console.log(gamesArrHistory);
-  // renderBets(gamesArr, betsList);
+  renderBets(gamesArrHistory, hisoryBets);
+  renderBets(gamesArr, betsList);
 };
 
 //remove elements from bets list
-betsList.addEventListener("click", function (e) {
+historyActiveWrap.addEventListener("click", function (e) {
   if (!e.target.classList.contains("btn-close")) return;
 
   const clickedTile = e.target.closest(".tile--game-details");
@@ -211,6 +205,7 @@ betsList.addEventListener("click", function (e) {
   betsArr = betsArr.filter((el) => el.gameID !== id);
   localStorage.setItem("myData", JSON.stringify(betsArr));
 
+  console.log(clickedTile);
   clickedTile.remove();
 });
 
@@ -252,7 +247,7 @@ const getJSON = async function (url) {
 
 const takeMatches = async function takeMatches(dateFrom, dateTo) {
   const res = await getJSON(
-    `https://soccer.sportmonks.com/api/v2.0/fixtures/between/${dateFrom}/${dateTo}?api_token=${api3}`
+    `https://soccer.sportmonks.com/api/v2.0/fixtures/between/${dateFrom}/${dateTo}?api_token=${api2}`
   );
 
   return res.data;
@@ -266,46 +261,33 @@ const takeMatches = async function takeMatches(dateFrom, dateTo) {
 //   const range = parseInt(e.target.dataset.days, 10);
 //   const date = new Date();
 //   date.setDate(date.getDate() + range);
-//   console.log(
-//     `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-//   );
+//   matchesRange = `${date.getFullYear()}-${
+//     date.getMonth() + 1
+//   }-${date.getDate()}`;
 //   // return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 //   // return `${date.getFullYear}-${date.getMonth}-${date.getDay}`;
+//   console.log(matchesRange);
 // });
 
-// const matchRange = function(range){
-//   clientPanel.addEventListener("click", function (e) {
-//     const range = parseInt(e.target.dataset.days, 10);
-//     const date = new Date();
-//     date.setDate(date.getDate() + range);
-//     const matchesRange = (`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`)
-//     // return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-//     // return `${date.getFullYear}-${date.getMonth}-${date.getDay}`;
-//   });
-// }
-
-let matchesRange = "";
-
-clientPanel.addEventListener("click", function (e) {
-  const range = parseInt(e.target.dataset.days, 10);
-  const date = new Date();
-  date.setDate(date.getDate() + range);
-  matchesRange = `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}`;
-  // return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  // return `${date.getFullYear}-${date.getMonth}-${date.getDay}`;
-  console.log(matchesRange);
-});
-
-const init = async function () {
+const init = async function (dateFrom, dateTo) {
   try {
-    let lastMatches = await takeMatches("2022-09-23", "2022-09-30");
+    const now = new Date();
+    const dateRange = new Date();
+    dateRange.setDate(now.getDate() + 3);
+
+    if (!dateFrom)
+      dateFrom = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    if (!dateTo)
+      dateTo = `${dateRange.getFullYear()}-${
+        dateRange.getMonth() + 1
+      }-${dateRange.getDate()}`;
+
+    let lastMatches = await takeMatches(dateFrom, dateTo);
 
     let teamsVisitors = await Promise.all(
       lastMatches.map(async (team, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/teams/${team.visitorteam_id}?api_token=${api3}`
+          `https://soccer.sportmonks.com/api/v2.0/teams/${team.visitorteam_id}?api_token=${api2}`
         );
         return { name: res.data.name, logo: res.data.logo_path };
       })
@@ -314,7 +296,7 @@ const init = async function () {
     let teamsHome = await Promise.all(
       lastMatches.map(async (team, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/teams/${team.localteam_id}?api_token=${api3}`,
+          `https://soccer.sportmonks.com/api/v2.0/teams/${team.localteam_id}?api_token=${api2}`,
           requestOptions
         );
         return { name: res.data.name, logo: res.data.logo_path };
@@ -326,7 +308,7 @@ const init = async function () {
     let odds = await Promise.all(
       lastMatches.map(async (game, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/odds/fixture/${game.id}/bookmaker/97?api_token=${api3}`,
+          `https://soccer.sportmonks.com/api/v2.0/odds/fixture/${game.id}/bookmaker/97?api_token=${api2}`,
           requestOptions
         );
         // if (res.data[i]) {
@@ -334,8 +316,6 @@ const init = async function () {
         return {
           team1win:
             res.data[i]?.bookmaker.data[0].odds.data[0]?.value ?? getRnd(1, 9),
-          // res.data[i].bookmaker.data[0].odds.data[0]?.value ??
-          // "no bets",
           draw:
             res.data[i]?.bookmaker.data[0].odds.data[1]?.value ?? getRnd(1, 9),
           team2win:
@@ -351,7 +331,7 @@ const init = async function () {
 
     addBet(nextMatches);
 
-    renderBets(betsArr, betsList);
+    // renderBets(betsArr, betsList);
 
     collectBets(nextMatches);
 
@@ -364,35 +344,51 @@ const init = async function () {
 };
 
 init();
+
+clientPanel.addEventListener("click", function (e) {
+  const range = parseInt(e.target.dataset.days, 10);
+  const now = new Date();
+  const dateRange = new Date();
+
+  dateRange.setDate(now.getDate() + range);
+  dateFrom = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  dateTo = `${dateRange.getFullYear()}-${
+    dateRange.getMonth() + 1
+  }-${dateRange.getDate()}`;
+
+  init(dateFrom, dateTo);
+});
 // checkGameResoult(betsArr);
 
 function renderMatches(gamesData) {
-  for (const game of gamesData) {
-    const html = `
-                <li class="tile">
-                <div class="tile__team-preview">
-                <div class="tile__team-preview__name">${game.teamsHome.name}</div>
-                <div class="tile__team-preview__img-score">
-                <img
-                src=${game.teamsHome.logo}
-                alt="logo"
-                />
-                <div class="tile__team-preview__score">${game.scoreLocal}</div>
-                </div>
-                </div>
+  oddTilesList.innerHTML = "";
 
-                <div class="tile__team-preview">
-                <div class="tile__team-preview__name">${game.teamsVisitors.name}</div>
-                <div class="tile__team-preview__img-score">
-                <div class="tile__team-preview__score">${game.scoreVisitor}</div>
-                <img
-                src=${game.teamsVisitors.logo}
-                alt="logo"
-                />
-                </div>
-                </div>
-                <span class="match-date">${game.time}</span>
-                </li>`;
+  for (const game of gamesData) {
+    // const html = `
+    //             <li class="tile">
+    //             <div class="tile__team-preview">
+    //             <div class="tile__team-preview__name">${game.teamsHome.name}</div>
+    //             <div class="tile__team-preview__img-score">
+    //             <img
+    //             src=${game.teamsHome.logo}
+    //             alt="logo"
+    //             />
+    //             <div class="tile__team-preview__score">${game.scoreLocal}</div>
+    //             </div>
+    //             </div>
+
+    //             <div class="tile__team-preview">
+    //             <div class="tile__team-preview__name">${game.teamsVisitors.name}</div>
+    //             <div class="tile__team-preview__img-score">
+    //             <div class="tile__team-preview__score">${game.scoreVisitor}</div>
+    //             <img
+    //             src=${game.teamsVisitors.logo}
+    //             alt="logo"
+    //             />
+    //             </div>
+    //             </div>
+    //             <span class="match-date">${game.time}</span>
+    //             </li>`;
     // const htmlOdds = "";
     const htmlOdds = `
   <li class="tile tile--odd tile-with-bets"  data-id="${game.matches.id}">
@@ -410,21 +406,21 @@ function renderMatches(gamesData) {
         <div class="tile__team-preview__name tile__team-preview__draw">X</div>
         <div class="tile__team-preview__score tile__team-preview__odd">${game.odds.draw}</div>
         </div>
-      <div class="tile__team-preview">
+      <div class="tile__away tile__team-preview">
       <div class="tile__team-preview__img-score">
-          <img
-          src=${game.teamsVisitors.logo}
-            alt="logo"
-          />
-          <div class="tile__team-preview__name">${game.teamsVisitors.name}</div>
-          </div>
-          <div class="tile__team-preview__score">${game.odds.team2win}</div>
+      <img
+      src=${game.teamsVisitors.logo}
+        alt="logo"
+      />
+      <div class="tile__team-preview__name">${game.teamsVisitors.name}</div>
+      </div>
+      <div class="tile__team-preview__score">${game.odds.team2win}</div>
       </div>
       <span class="match-date">${game.time}</span>
     </li>`;
 
     gameOddsElement.insertAdjacentHTML("beforeend", htmlOdds);
 
-    gameListElement.insertAdjacentHTML("beforeend", html);
+    // gameListElement.insertAdjacentHTML("beforeend", html);
   }
 }
