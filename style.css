@@ -26,6 +26,8 @@
   grid-template-columns: 1fr;
   flex: 25%;
   justify-items: center;
+  align-items: flex-start;
+  grid-template-rows: 85px auto;
 }
 
 .client-panel {
@@ -99,7 +101,7 @@
   width: 100%;
   border-bottom: 2px solid #2b2540;
   border-right: none;
-  background-color: #f0ffff;
+  background: linear-gradient(to right, #ffd15f, #fab103);
   padding: 1rem 0;
 }
 
@@ -119,18 +121,27 @@
 }
 
 .tile {
-  background-color: #ccc9e1;
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  grid-template-rows: 1.4fr 1fr;
+  grid-gap: 5px;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
   padding: 0.2rem 0.5rem;
+  margin-bottom: 0.5rem;
   border-radius: 10px;
+  background-color: #ccc9e1;
   box-shadow: 5px 6px 13px -8px rgba(66, 68, 90, 1);
-  min-height: 3.8rem;
-  display: flex;
+
+  /* min-height: 3.8rem; */
+  /* display: flex;
   justify-content: space-around;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem; */
 }
 
-.history-bets .tile {
+.game-list--history .tile {
   position: relative;
 }
 
@@ -190,6 +201,11 @@
   position: relative;
 }
 
+.tile--odd:hover {
+  cursor: pointer;
+  background-color: #e0d1fc;
+}
+
 .tile--checked::after {
   content: "❤";
   color: red;
@@ -212,29 +228,30 @@
   margin: 0 auto;
 }
 
-.btn-bet {
-  background: linear-gradient(to right, #46ca19, #04c1b1);
+.btn {
+  background: linear-gradient(to right, #313131, #8855ea);
   background-color: #46ca19;
   color: #fff;
   font-family: Trebuchet MS;
   font-size: 18px;
   font-weight: 800;
-  font-style: normal;
-  text-decoration: none;
+  /* font-style: normal;
+  text-decoration: none; */
   padding: 5px 15px;
   border: 0px solid #000;
   border-radius: 10px;
-  display: inline-flex;
+  /* display: inline-flex;
   justify-content: center;
-  align-items: center;
-  box-shadow: 0px 3px 4px -2px #2d2d2d;
+  align-items: center; */
+  box-shadow: 1px 2px 2px 0px #b08aff;
   margin-top: 5px;
+  cursor: pointer;
 }
-.btn-bet:hover {
+.btn:hover {
   background: linear-gradient(to right, #68d054, #51c8ba);
   background-color: #68d054;
 }
-.btn-bet:active {
+.btn:active {
   transform: scale(0.95);
 }
 
@@ -243,7 +260,7 @@
   bottom: 6%;
   right: 2%;
   position: absolute;
-  background-color: rgb(230 0 0);
+  background-color: rgba(230, 0, 0, 0.856);
   width: 0.8rem;
   height: 0.8rem;
   border-radius: 10px;
@@ -264,7 +281,7 @@
   background-color: #ffa699;
 }
 
-.tile-with-bets {
+/* .tile-with-bets {
   display: grid;
   grid-template-columns: 33% 33% 33%;
   grid-template-rows: 1.4fr 1fr;
@@ -272,7 +289,7 @@
   align-items: center;
   justify-content: space-between;
   position: relative;
-}
+} */
 
 .match-date {
   text-align: center;
@@ -282,6 +299,25 @@
   color: rgba(66, 68, 90, 1);
   font-size: small;
   font-weight: 400;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-top: 16px solid #ffd15f;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  margin: 3rem auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media screen and (max-width: 1400px) {
