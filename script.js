@@ -67,10 +67,23 @@ const addBet = function (arr) {
 };
 
 //Move game to the history tab
-const checkGameResoult = function (gamesArr) {
+//added async function - potenial error
+const checkGameResoult = async function (gamesArr) {
   const gamesArrHistory = gamesArr.filter(
     (game) => Date.parse(game.time) < Date.parse(now)
   );
+
+  //  fetching game result if the game has been finished
+  let fixture = await Promise.all(
+    gamesArrHistory.map(async (game, i) => {
+      const res = await takeFixture(game.gameID);
+      console.log(res);
+      game.scoreLocal = res.scores.localteam_score;
+      game.scoreVisitor = res.scores.visitorteam_score;
+      game.winner = res.winner_team_id;
+    })
+  );
+
   localStorage.setItem("myData", JSON.stringify(gamesArr));
   gamesArr = gamesArr.filter((game) => Date.parse(game.time) > Date.parse(now));
 
@@ -115,7 +128,15 @@ const getJSON = async function (url) {
 
 const takeMatches = async function takeMatches(dateFrom, dateTo) {
   const res = await getJSON(
-    `https://soccer.sportmonks.com/api/v2.0/fixtures/between/${dateFrom}/${dateTo}?api_token=${api4}`
+    `https://soccer.sportmonks.com/api/v2.0/fixtures/between/${dateFrom}/${dateTo}?api_token=${api2}`
+  );
+
+  return res.data;
+};
+
+const takeFixture = async function (fixtureId) {
+  const res = await getJSON(
+    `https://soccer.sportmonks.com/api/v2.0/fixtures/${fixtureId}?api_token=${api2}`
   );
 
   return res.data;
@@ -140,7 +161,7 @@ const init = async function (dateFrom, dateTo) {
     let teamsVisitors = await Promise.all(
       matchesFromTo.map(async (team, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/teams/${team.visitorteam_id}?api_token=${api4}`
+          `https://soccer.sportmonks.com/api/v2.0/teams/${team.visitorteam_id}?api_token=${api2}`
         );
         return { name: res.data.name, logo: res.data.logo_path };
       })
@@ -149,7 +170,7 @@ const init = async function (dateFrom, dateTo) {
     let teamsHome = await Promise.all(
       matchesFromTo.map(async (team, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/teams/${team.localteam_id}?api_token=${api4}`,
+          `https://soccer.sportmonks.com/api/v2.0/teams/${team.localteam_id}?api_token=${api2}`,
           requestOptions
         );
         return { name: res.data.name, logo: res.data.logo_path };
@@ -159,7 +180,7 @@ const init = async function (dateFrom, dateTo) {
     let odds = await Promise.all(
       matchesFromTo.map(async (game, i) => {
         const res = await getJSON(
-          `https://soccer.sportmonks.com/api/v2.0/odds/fixture/${game.id}/bookmaker/97?api_token=${api4}`,
+          `https://soccer.sportmonks.com/api/v2.0/odds/fixture/${game.id}/bookmaker/97?api_token=${api2}`,
           requestOptions
         );
 
@@ -218,7 +239,7 @@ historyActiveWrap.addEventListener("click", function (e) {
   clickedTile.remove();
 });
 
-//rendering initial tabel with matches, where user choosing the game
+//rendering initial table with matches, where user choosing the game
 function renderMatches(gamesData) {
   oddTilesList.innerHTML = "";
 
@@ -257,7 +278,7 @@ function renderMatches(gamesData) {
   }
 }
 
-//rendering the area where user placing his bet
+//rendering the area where user place his bet
 const renderGameDetails = function (arr) {
   oddTilesList.addEventListener("click", function (e) {
     const id = parseInt(e.target.closest(".tile").dataset.id, 10);
@@ -370,9 +391,10 @@ const renderBets = function (betsArr, placeToRender) {
       draw.classList.add("winner-bet");
     }
 
-    if (game.winner && game.bet === game.winner) {
-      localteam.closest(".tile").classList.add("winner-ok");
-    } else if (game.winner)
-      localteam.closest(".tile").classList.add("winner-lose");
+    if (Date.parse(game.time) < Date.parse(now)) {
+      if (game.winner === game.bet || game.bet === game.winner) {
+        localteam.closest(".tile").classList.add("winner-ok");
+      } else localteam.closest(".tile").classList.add("winner-lose");
+    }
   }
 };
